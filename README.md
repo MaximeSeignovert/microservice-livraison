@@ -22,12 +22,12 @@ npm start
 
 ### Méthode 2 : Avec Docker
 
-```bash
-# Construction de l'image
-docker build -t delivery-service .
+1. Renommez `.env.example` en  `.env`
 
-# Démarrage du conteneur
-docker run -p 3000:3000 delivery-service
+2. Executez la commande suivante
+```bash
+# Lancer en arrière-plan
+docker-compose up --build -d
 ```
 
 Le service sera accessible sur : http://localhost:3000
