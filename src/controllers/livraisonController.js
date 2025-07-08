@@ -257,7 +257,7 @@ const livraisonController = {
   // Récupérer les livraisons disponibles
   getLivraisonsDisponibles: async (request, reply) => {
     try {
-      const result = await pool.query('SELECT * FROM livraison WHERE statut = $1', ['disponible']);
+      const result = await pool.query('SELECT * FROM delivery WHERE status = $1', ['disponible']);
       return result.rows;
     } catch (error) {
       reply.code(500).send({ error: error.message });
