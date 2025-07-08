@@ -13,17 +13,21 @@ async function routes(fastify, options) {
 
   // Routes pour les livraisons
   fastify.get('/livraisons/disponibles', livraisonController.getLivraisonsDisponibles);
-  fastify.get('/livraisons', livraisonController.getAllLivraisons);
+
   fastify.get('/livraisons/:id', livraisonController.getLivraisonById);
   fastify.post('/livraisons', livraisonController.createLivraison);
+
   fastify.patch('/livraisons/:id/assigner', livraisonController.assignerLivreur);
   fastify.patch('/livraisons/:id/expedier', livraisonController.expedierLivraison);
+
   fastify.patch('/livraisons/:id/livrer', livraisonController.marquerCommeLivree);
   fastify.put('/livraisons/:id/statut', livraisonController.updateStatutLivraison);
   
   // Routes de recherche/filtrage
   fastify.get('/livreurs/:livreurId/livraisons', livraisonController.getLivraisonsByLivreur);
+
   fastify.get('/commandes/:idCommande/livraisons', livraisonController.getLivraisonsByCommande);
+
   fastify.get('/livraisons/statut/:statut', livraisonController.getLivraisonsByStatut);
 }
 

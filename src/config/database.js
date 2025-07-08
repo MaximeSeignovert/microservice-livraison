@@ -75,7 +75,8 @@ const insertTestData = async () => {
       const deliveries = [
         { order_id: 'CMD-001', delivery_person_id: personIds[0], delivery_address_id: 'ADDR-001', status: 'expedie' },
         { order_id: 'CMD-002', delivery_person_id: personIds[1], delivery_address_id: 'ADDR-002', status: 'en_transit' },
-        { order_id: 'CMD-003', delivery_person_id: personIds[2], delivery_address_id: 'ADDR-003', status: 'en_attente' }
+        { order_id: 'CMD-003', delivery_person_id: personIds[2], delivery_address_id: 'ADDR-003', status: 'en_attente' },
+        { order_id: 'CMD-004', delivery_person_id: personIds[2], delivery_address_id: 'ADDR-004', status: 'disponible' }
       ];
 
       for (const delivery of deliveries) {
