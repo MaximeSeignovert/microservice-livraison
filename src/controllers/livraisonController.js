@@ -252,7 +252,26 @@ const livraisonController = {
     } catch (error) {
       reply.code(500).send({ error: error.message });
     }
-  }
+  },
+
+  // Récupérer les livraisons disponibles
+  getLivraisonsDisponibles: async (request, reply) => {
+    try {
+      const result = await pool.query('SELECT * FROM livraison WHERE statut_livraison = $1', ['disponible']);
+      return result.rows;
+    } catch (error) {
+      reply.code(500).send({ error: error.message });
+    }
+  },
+
+
 };
+
+
+
+
+
+
+
 
 module.exports = livraisonController; 

@@ -12,6 +12,7 @@ async function routes(fastify, options) {
   fastify.delete('/livreurs/:id', livreurController.deleteLivreur);
 
   // Routes pour les livraisons
+  fastify.get('/livraisons/disponibles', livraisonController.getLivraisonsDisponibles);
   fastify.get('/livraisons', livraisonController.getAllLivraisons);
   fastify.get('/livraisons/:id', livraisonController.getLivraisonById);
   fastify.post('/livraisons', livraisonController.createLivraison);
