@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const { v4: uuidv4 } = require('uuid');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/delivery'
@@ -8,23 +9,33 @@ const pool = new Pool({
 const initDatabase = async () => {
   try {
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS livreur (
-        id SERIAL PRIMARY KEY,
-        nom VARCHAR(100) NOT NULL,
-        prenom VARCHAR(100) NOT NULL,
-        telephone VARCHAR(20) NOT NULL,
-        email VARCHAR(100) UNIQUE NOT NULL,
-        statut VARCHAR(50) NOT NULL
+      -- Table DeliveryPerson selon le schéma UML
+      CREATE TABLE IF NOT EXISTS delivery_person (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name VARCHAR(255) NOT NULL,
+        phone VARCHAR(20) NOT NULL,
+        is_available BOOLEAN NOT NULL DEFAULT true,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
       );
 
-      CREATE TABLE IF NOT EXISTS livraison (
-        id SERIAL PRIMARY KEY,
-        id_commande INTEGER NOT NULL,
-        id_livreur INTEGER REFERENCES livreur(id),
-        date_heure_debut TIMESTAMP,
-        date_heure_fin TIMESTAMP,
-        statut_livraison VARCHAR(50) NOT NULL
+      -- Table Delivery selon le schéma UML
+      CREATE TABLE IF NOT EXISTS delivery (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        order_id VARCHAR(255) NOT NULL,
+        delivery_person_id UUID REFERENCES delivery_person(id),
+        delivery_address_id VARCHAR(255) NOT NULL,
+        dispatched_at TIMESTAMP,
+        delivered_at TIMESTAMP,
+        status VARCHAR(50) NOT NULL DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
       );
+
+      -- Index pour améliorer les performances
+      CREATE INDEX IF NOT EXISTS idx_delivery_order_id ON delivery(order_id);
+      CREATE INDEX IF NOT EXISTS idx_delivery_person_id ON delivery(delivery_person_id);
+      CREATE INDEX IF NOT EXISTS idx_delivery_status ON delivery(status);
     `);
     console.log('Base de données initialisée avec succès');
 
@@ -40,23 +51,45 @@ const initDatabase = async () => {
 const insertTestData = async () => {
   try {
     // Vérifier si des données existent déjà
-    const livreursCount = await pool.query('SELECT COUNT(*) FROM livreur');
-    if (parseInt(livreursCount.rows[0].count) === 0) {
+    const deliveryPersonsCount = await pool.query('SELECT COUNT(*) FROM delivery_person');
+    if (parseInt(deliveryPersonsCount.rows[0].count) === 0) {
       // Insertion des livreurs
-      await pool.query(`
-        INSERT INTO livreur (nom, prenom, telephone, email, statut) VALUES
-        ('Dupont', 'Jean', '0123456789', 'jean.dupont@email.com', 'disponible'),
-        ('Martin', 'Sophie', '0987654321', 'sophie.martin@email.com', 'en_livraison'),
-        ('Bernard', 'Pierre', '0612345678', 'pierre.bernard@email.com', 'disponible')
-      `);
+      const deliveryPersons = [
+        { name: 'Jean Dupont', phone: '0123456789', is_available: true },
+        { name: 'Sophie Martin', phone: '0987654321', is_available: false },
+        { name: 'Pierre Bernard', phone: '0612345678', is_available: true }
+      ];
+
+      for (const person of deliveryPersons) {
+        await pool.query(`
+          INSERT INTO delivery_person (name, phone, is_available) 
+          VALUES ($1, $2, $3)
+        `, [person.name, person.phone, person.is_available]);
+      }
+
+      // Récupérer les IDs des livreurs pour les livraisons
+      const personsResult = await pool.query('SELECT id FROM delivery_person ORDER BY created_at');
+      const personIds = personsResult.rows.map(row => row.id);
 
       // Insertion des livraisons
-      await pool.query(`
-        INSERT INTO livraison (id_commande, id_livreur, date_heure_debut, statut_livraison) VALUES
-        (1, 1, NOW(), 'en_cours'),
-        (2, 2, NOW(), 'en_cours'),
-        (3, 3, NOW(), 'en_attente')
-      `);
+      const deliveries = [
+        { order_id: 'CMD-001', delivery_person_id: personIds[0], delivery_address_id: 'ADDR-001', status: 'expedie' },
+        { order_id: 'CMD-002', delivery_person_id: personIds[1], delivery_address_id: 'ADDR-002', status: 'en_transit' },
+        { order_id: 'CMD-003', delivery_person_id: personIds[2], delivery_address_id: 'ADDR-003', status: 'en_attente' }
+      ];
+
+      for (const delivery of deliveries) {
+        await pool.query(`
+          INSERT INTO delivery (order_id, delivery_person_id, delivery_address_id, dispatched_at, status) 
+          VALUES ($1, $2, $3, $4, $5)
+        `, [
+          delivery.order_id, 
+          delivery.delivery_person_id, 
+          delivery.delivery_address_id, 
+          delivery.status === 'en_attente' ? null : new Date(),
+          delivery.status
+        ]);
+      }
 
       console.log('Données de test insérées avec succès');
     } else {
