@@ -6,7 +6,7 @@ const livraisonController = {
   createLivraison: async (request, reply) => {
     try {
       const { livraisonId } = request.params;
-      const { idCommande, adresseLivraison, statut = "PREPARING" } = request.body;
+      const { idCommande, adresseLivraison, statut} = request.body;
       
       // Vérifier si la livraison existe déjà
       const existingLivraison = await pool.query('SELECT id FROM delivery WHERE id = $1', [livraisonId]);
@@ -14,10 +14,21 @@ const livraisonController = {
         return reply.code(409).send({ error: 'Livraison avec cet ID existe déjà' });
       }
       
-      const result = await pool.query(
-        'INSERT INTO delivery (id, order_id, delivery_address_id, status) VALUES ($1, $2, $3, $4) RETURNING *',
-        [livraisonId, idCommande, adresseLivraison, statut]
-      );
+      // Si l'ID est fourni, on l'utilise, sinon on laisse PostgreSQL générer un ID auto-incrémenté
+      let result;
+      if (livraisonId && !isNaN(livraisonId)) {
+        // Forcer un ID spécifique
+        result = await pool.query(
+          'INSERT INTO delivery (id, order_id, delivery_address_id, status) VALUES ($1, $2, $3, $4) RETURNING *',
+          [parseInt(livraisonId), idCommande, adresseLivraison, statut]
+        );
+      } else {
+        // Laisser PostgreSQL générer l'ID
+        result = await pool.query(
+          'INSERT INTO delivery (order_id, delivery_address_id, status) VALUES ($1, $2, $3) RETURNING *',
+          [idCommande, adresseLivraison, statut]
+        );
+      }
 
       return reply.code(201).send({ 
         id: result.rows[0].id, 
@@ -84,7 +95,7 @@ const livraisonController = {
         SELECT 
           d.*,
           dp.name as livreur_nom,
-          dp.phone as livreur_telephone,
+          dp.phone as livreur_telephone
         FROM delivery d
         JOIN delivery_person dp ON d.delivery_person_id = dp.id
         WHERE d.delivery_person_id = $1

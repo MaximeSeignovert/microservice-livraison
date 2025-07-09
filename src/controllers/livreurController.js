@@ -30,10 +30,21 @@ const livreurController = {
         return reply.code(409).send({ error: 'Livreur avec cet ID existe déjà' });
       }
       
-      const result = await pool.query(
-        'INSERT INTO delivery_person (id, name, phone, is_available) VALUES ($1, $2, $3, $4) RETURNING *',
-        [livreurId, nom, telephone, disponible]
-      );
+      // Si l'ID est fourni, on l'utilise, sinon on laisse PostgreSQL générer un ID auto-incrémenté
+      let result;
+      if (livreurId && !isNaN(livreurId)) {
+        // Forcer un ID spécifique
+        result = await pool.query(
+          'INSERT INTO delivery_person (id, name, phone, is_available) VALUES ($1, $2, $3, $4) RETURNING *',
+          [parseInt(livreurId), nom, telephone, disponible]
+        );
+      } else {
+        // Laisser PostgreSQL générer l'ID
+        result = await pool.query(
+          'INSERT INTO delivery_person (name, phone, is_available) VALUES ($1, $2, $3) RETURNING *',
+          [nom, telephone, disponible]
+        );
+      }
 
       return reply.code(201).send({ 
         id: result.rows[0].id, 
