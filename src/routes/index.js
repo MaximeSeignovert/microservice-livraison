@@ -11,12 +11,15 @@ async function routes(fastify, options) {
   // Création d'une livraison au moment de la commande
   fastify.post('/livraisons/:livraisonId', livraisonController.createLivraison);
   
+  // Dashboard livreur - Affichage des livraisons dès la confirmation de la commande
+  // Cette route doit être AVANT la route avec paramètre pour éviter les conflits
+  fastify.get('/livraisons/available', livraisonController.getAvailableLivraisons);
+  
   // Order Tracker - Obtenir les infos de la livraison (status de commande et infos livreurs)
   fastify.get('/livraisons/:livraisonId', livraisonController.getLivraisonById);
   
-  // Dashboard livreur - Affichage des livraisons dès la confirmation de la commande
-  fastify.get('/livraisons/available', livraisonController.getAvailableLivraisons);
-  fastify.get('/livraisons/:livreurId', livraisonController.getLivraisonsByLivreur);
+  // Dashboard livreur - Obtenir les livraisons d'un livreur spécifique
+  fastify.get('/livreur/:livreurId/livraisons', livraisonController.getLivraisonsByLivreur);
   
   // Prendre en charge une commande
   fastify.patch('/livraison/:livraisonId', livraisonController.takeLivraison);
