@@ -3,32 +3,23 @@ const livraisonController = require('../controllers/livraisonController');
 
 async function routes(fastify, options) {
   // Routes pour les livreurs
-  fastify.get('/livreurs', livreurController.getAllLivreurs);
-  fastify.get('/livreurs/disponibles', livreurController.getLivreursDisponibles);
+  // Créer un livreur lors du register d'un compte livreur
+  fastify.post('/livreur/:livreurId', livreurController.createLivreur);
   fastify.get('/livreurs/:id', livreurController.getLivreurById);
-  fastify.post('/livreurs', livreurController.createLivreur);
-  fastify.put('/livreurs/:id', livreurController.updateLivreur);
-  fastify.patch('/livreurs/:id/disponibilite', livreurController.updateDisponibilite);
-  fastify.delete('/livreurs/:id', livreurController.deleteLivreur);
 
   // Routes pour les livraisons
-  fastify.get('/livraisons/disponibles', livraisonController.getLivraisonsDisponibles);
-
-  fastify.get('/livraisons/:id', livraisonController.getLivraisonById);
-  fastify.post('/livraisons', livraisonController.createLivraison);
-
-  fastify.patch('/livraisons/:id/assigner', livraisonController.assignerLivreur);
-  fastify.patch('/livraisons/:id/expedier', livraisonController.expedierLivraison);
-
-  fastify.patch('/livraisons/:id/livrer', livraisonController.marquerCommeLivree);
-  fastify.put('/livraisons/:id/statut', livraisonController.updateStatutLivraison);
+  // Création d'une livraison au moment de la commande
+  fastify.post('/livraisons/:livraisonId', livraisonController.createLivraison);
   
-  // Routes de recherche/filtrage
-  fastify.get('/livreurs/:livreurId/livraisons', livraisonController.getLivraisonsByLivreur);
-
-  fastify.get('/commandes/:idCommande/livraisons', livraisonController.getLivraisonsByCommande);
-
-  fastify.get('/livraisons/statut/:statut', livraisonController.getLivraisonsByStatut);
+  // Order Tracker - Obtenir les infos de la livraison (status de commande et infos livreurs)
+  fastify.get('/livraisons/:livraisonId', livraisonController.getLivraisonById);
+  
+  // Dashboard livreur - Affichage des livraisons dès la confirmation de la commande
+  fastify.get('/livraisons/available', livraisonController.getAvailableLivraisons);
+  fastify.get('/livraisons/:livreurId', livraisonController.getLivraisonsByLivreur);
+  
+  // Prendre en charge une commande
+  fastify.patch('/livraison/:livraisonId', livraisonController.takeLivraison);
 }
 
 module.exports = routes; 
