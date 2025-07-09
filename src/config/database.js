@@ -43,7 +43,7 @@ const initDatabase = async () => {
     console.log('Base de données initialisée avec succès');
 
     // Insertion des données de test
-    //await insertTestData();
+    // await insertTestData();
   } catch (error) {
     console.error('Erreur lors de l\'initialisation de la base de données:', error);
     throw error;

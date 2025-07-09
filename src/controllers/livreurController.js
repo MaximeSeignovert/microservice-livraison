@@ -22,7 +22,7 @@ const livreurController = {
   createLivreur: async (request, reply) => {
     try {
       const { livreurId } = request.params;
-      const { nom, telephone, email, disponible = true } = request.body;
+      const { nom, telephone, disponible = true } = request.body;
       
       // Vérifier si le livreur existe déjà
       const existingLivreur = await pool.query('SELECT id FROM delivery_person WHERE id = $1', [livreurId]);
@@ -31,7 +31,7 @@ const livreurController = {
       }
       
       const result = await pool.query(
-        'INSERT INTO delivery_person (id, name, phone, is_available) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        'INSERT INTO delivery_person (id, name, phone, is_available) VALUES ($1, $2, $3, $4) RETURNING *',
         [livreurId, nom, telephone, disponible]
       );
 
