@@ -1,5 +1,4 @@
 const { Pool } = require('pg');
-const { v4: uuidv4 } = require('uuid');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/delivery'
@@ -9,9 +8,13 @@ const pool = new Pool({
 const initDatabase = async () => {
   try {
     await pool.query(`
-      -- Table DeliveryPerson selon le schéma UML
-      CREATE TABLE IF NOT EXISTS delivery_person (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      -- Supprimer les tables existantes pour recréer avec le bon schéma
+      DROP TABLE IF EXISTS delivery;
+      DROP TABLE IF EXISTS delivery_person;
+
+      -- Table DeliveryPerson avec ID entier
+      CREATE TABLE delivery_person (
+        id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         phone VARCHAR(20) NOT NULL,
         is_available BOOLEAN NOT NULL DEFAULT true,
@@ -19,11 +22,11 @@ const initDatabase = async () => {
         updated_at TIMESTAMP DEFAULT NOW()
       );
 
-      -- Table Delivery selon le schéma UML
-      CREATE TABLE IF NOT EXISTS delivery (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      -- Table Delivery avec ID entier
+      CREATE TABLE delivery (
+        id SERIAL PRIMARY KEY,
         order_id VARCHAR(255) NOT NULL,
-        delivery_person_id UUID REFERENCES delivery_person(id),
+        delivery_person_id INTEGER REFERENCES delivery_person(id),
         delivery_address_id VARCHAR(255) NOT NULL,
         dispatched_at TIMESTAMP,
         delivered_at TIMESTAMP,

@@ -76,7 +76,7 @@ const livraisonController = {
   },
 
   // Dashboard livreur - Obtenir les livraisons d'un livreur
-  // GET livraisons/$livreurId
+  // GET livreur/$livreurId/livraisons
   getLivraisonsByLivreur: async (request, reply) => {
     try {
       const { livreurId } = request.params;
