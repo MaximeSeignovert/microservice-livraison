@@ -31,8 +31,8 @@ const livreurController = {
       }
       
       const result = await pool.query(
-        'INSERT INTO delivery_person (id, name, phone, email, is_available) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-        [livreurId, nom, telephone, email, disponible]
+        'INSERT INTO delivery_person (id, name, phone, is_available) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [livreurId, nom, telephone, disponible]
       );
 
       return reply.code(201).send({ 

@@ -39,7 +39,6 @@ const livraisonController = {
           d.*,
           dp.name as livreur_nom,
           dp.phone as livreur_telephone,
-          dp.email as livreur_email,
           dp.is_available as livreur_disponible
         FROM delivery d
         LEFT JOIN delivery_person dp ON d.delivery_person_id = dp.id
@@ -64,8 +63,7 @@ const livraisonController = {
         SELECT 
           d.*,
           dp.name as livreur_nom,
-          dp.phone as livreur_telephone,
-          dp.email as livreur_email
+          dp.phone as livreur_telephone
         FROM delivery d
         LEFT JOIN delivery_person dp ON d.delivery_person_id = dp.id
         WHERE d.status IN ('PREPARING', 'READY', 'ON_THE_WAY', 'DELIVERED')
@@ -87,7 +85,6 @@ const livraisonController = {
           d.*,
           dp.name as livreur_nom,
           dp.phone as livreur_telephone,
-          dp.email as livreur_email
         FROM delivery d
         JOIN delivery_person dp ON d.delivery_person_id = dp.id
         WHERE d.delivery_person_id = $1
